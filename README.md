@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/xSilverWasHere/42-project-badges/refs/heads/main/covers/cover-so_long-bonus.png" alt="SO_LONG_BONUS"/>
 </p>
+
 # 🎮 so_long – A 2D MiniLibX Game
 
 **so_long** is a small 2D game developed using the **MiniLibX** graphical library. The objective is simple: collect all items and reach the exit – but the game’s design, map parsing, and memory management require precision, logic, and a strong grasp of C.

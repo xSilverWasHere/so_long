@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 16:49:38 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/22 19:23:17 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/22 20:58:30 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,27 @@ static void validate_map(t_game *game, int *num_enemies)
 	}
 
 	validate_chars(game, &p, &x, &e, &c);
-
 	game->total_collectibles = c;
-	
+
 	if (p != 1 || e != 1 || c < 1)
 		error_exit("Map must have 1 'P', 1 'E', and at least 1 'C'", game);
+	char **grid_copy = copy_map_grid(game->grid, game->map_height);
+	if (!grid_copy)
+		error_exit("Failed to copy map for path validation", game);
+
+	flood_fill(grid_copy, game->player.y, game->player.x);
+
+	if (!all_targets_reached(grid_copy, game->map_height))
+	{
+		for (int i = 0; i < game->map_height; i++)
+			free(grid_copy[i]);
+		free(grid_copy);
+		error_exit("Unreachable collectibles or exit", game);
+	}
+
+	for (int i = 0; i < game->map_height; i++)
+		free(grid_copy[i]);
+	free(grid_copy);
 
 	*num_enemies = x;
 }
@@ -168,4 +184,38 @@ void	free_map(t_game *game)
 		free(game->grid[i]);
 	free(game->grid);
 	game->grid = NULL;
+}
+
+char **copy_map_grid(char **grid, int height)
+{
+	char **copy = malloc(sizeof(char *) * (height + 1));
+	if (!copy)
+		return (NULL);
+
+	for (int i = 0; i < height; i++)
+		copy[i] = ft_strdup(grid[i]);
+	copy[height] = NULL;
+	return (copy);
+}
+
+void flood_fill(char **grid, int y, int x)
+{
+	if (grid[y][x] == '1' || grid[y][x] == 'V')
+		return;
+
+	grid[y][x] = 'V'; // Mark visited
+
+	flood_fill(grid, y + 1, x);
+	flood_fill(grid, y - 1, x);
+	flood_fill(grid, y, x + 1);
+	flood_fill(grid, y, x - 1);
+}
+
+int all_targets_reached(char **grid, int height)
+{
+	for (int y = 0; y < height; y++)
+		for (int x = 0; grid[y][x]; x++)
+			if (grid[y][x] == 'C' || grid[y][x] == 'E')
+				return (0); // Unreachable
+	return (1);
 }

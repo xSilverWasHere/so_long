@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:17:57 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/22 19:17:30 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/22 20:57:21 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,5 +98,8 @@ void	load_texture(void *mlx, t_img *img, char *path);
 void	error_exit(const char *msg, t_game *game);
 int		load_map(t_game *game, const char *filename);
 void	free_map(t_game *game);
+char 	**copy_map_grid(char **grid, int height);
+void 	flood_fill(char **grid, int y, int x);
+int 	all_targets_reached(char **grid, int height);
 
 #endif

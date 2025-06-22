@@ -36,13 +36,13 @@ BONUS_INC_PATH		= src_bonus
 BONUS_BUILD_PATH		= .build_bonus
 
 
-FILES	= main.c map.c player.c render.c utils.c enemy.c
+FILES	= main.c init.c render.c events.c map.c
 
 SRC						= $(addprefix $(SRC_PATH)/, $(FILES))
 OBJS					= $(SRC:$(SRC_PATH)/%.c=$(BUILD_PATH)/%.o)
 HEADERS				= $(INC_PATH)/so_long.h
 
-BONUS_FILES	= 
+BONUS_FILES	= main_bonus.c init_bonus.c render_bonus.c events_bonus.c map_bonus.c
 
 BONUS_SRC						= $(addprefix $(BONUS_SRC_PATH)/, $(BONUS_FILES))
 BONUS_OBJS					= $(BONUS_SRC:$(BONUS_SRC_PATH)/%.c=$(BONUS_BUILD_PATH)/%.o)
@@ -61,7 +61,7 @@ MLX_ARC				= $(MLX_PATH)/libmlx_Linux.a
 #                              COMPILER & FLAGS                                #
 #==============================================================================#
 
-CC						= cc
+CC						= gcc-13
 
 CFLAGS				= -Wall -Wextra -Werror -g
 

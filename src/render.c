@@ -5,204 +5,61 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/20 14:36:04 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/20 21:12:01 by jpedro-g         ###   ########.fr       */
+/*   Created: 2025/06/22 11:40:28 by jpedro-g          #+#    #+#             */
+/*   Updated: 2025/06/22 19:18:14 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-void draw_sprite(t_img *dst, t_img *src, int x_offset, int y_offset)
+void	draw_tile_to_screen(t_img *screen, t_img *tile, int x_offset, int y_offset)
 {
-	int x, y;
-	char *src_pixel;
-	char *dst_pixel;
-
-	for (y = 0; y < src->height; y++)
+	if (!screen->addr || !tile->addr)
 	{
-		for (x = 0; x < src->width; x++)
+		ft_putendl_fd("ERROR: Null image address in draw_tile_to_screen", 2);
+		exit(1);
+	}
+	
+	for (int y = 0; y < tile->height; y++)
+	{
+		for (int x = 0; x < tile->width; x++)
 		{
-			if (x + x_offset >= dst->width || y + y_offset >= dst->height)
-				continue;
+			int src_i = y * tile->line_len + x * (tile->bpp / 8);
+			int dst_i = (y_offset + y) * screen->line_len + (x_offset + x) * (screen->bpp / 8);
 
-			src_pixel = src->img_pixels_ptr + y * src->line_len + x * (src->bits_per_pixel / 8);
-			dst_pixel = dst->img_pixels_ptr + (y + y_offset) * dst->line_len + (x + x_offset) * (dst->bits_per_pixel / 8);
-			*(unsigned int *)dst_pixel = *(unsigned int *)src_pixel;
+			unsigned int pixel;
+			ft_memcpy(&pixel, tile->addr + src_i, sizeof(unsigned int));
+			if ((pixel >> 24) != 0xFF)
+				ft_memcpy(screen->addr + dst_i, &pixel, sizeof(unsigned int));
 		}
 	}
 }
 
-void draw_sprite_flipped(t_img *dst, t_img *src, int x_offset, int y_offset)
+void draw(t_game *game)
 {
-	int x, y;
-	unsigned int color;
-	char *src_pixel;
-	char *dst_pixel;
+	ft_memset(game->screen.addr, 0, game->screen.height * game->screen.line_len);
 
-	for (y = 0; y < src->height; y++)
+	for (int y = 0; y < game->map_height; y++)
 	{
-		for (x = 0; x < src->width; x++)
+		for (int x = 0; x < game->map_width; x++)
 		{
-			int flipped_x = src->width - 1 - x;
+			int px = x * TILE_SIZE;
+			int py = y * TILE_SIZE;
+			draw_tile_to_screen(&game->screen, &game->floor, px, py);
 
-			if (x + x_offset >= dst->width || y + y_offset >= dst->height)
-				continue;
-
-			src_pixel = src->img_pixels_ptr
-				+ y * src->line_len
-				+ flipped_x * (src->bits_per_pixel / 8);
-			color = *(unsigned int *)src_pixel;
-
-			if ((color >> 24) == 0x00)
-				continue;
-
-			dst_pixel = dst->img_pixels_ptr
-				+ (y + y_offset) * dst->line_len
-				+ (x + x_offset) * (dst->bits_per_pixel / 8);
-			*(unsigned int *)dst_pixel = color;
-		}
-	}
-}
-
-void update_enemies(t_game *game)
-{
-	t_enemy *e = game->enemies;
-
-	while (e)
-	{
-		update_animation(&e->anim);
-
-		int next_x = e->x + e->dir_x;
-		int next_y = e->y + e->dir_y;
-
-		if (game->map[next_y][next_x] == '1')
-		{
-			e->dir_x *= -1;
-			e->dir_y *= -1;
-		}
-		else
-		{
-			e->x = next_x;
-			e->y = next_y;
-		}
-
-		if (e->x == game->vars.player_x && e->y == game->vars.player_y)
-		{
-			game->is_dead = 1;
-		}
-	}
-}
-
-void 	update_animation(t_anim *anim)
-{
-	anim->frame_timer++;
-	if (anim->frame_timer >= anim->frame_delay)
-	{
-		anim->frame_timer = 0;
-		anim->current_frame = (anim->current_frame + 1) % anim->frame_count;
-	}
-}
-
-void load_texture(t_img *img, void *mlx, char *path)
-{
-	img->img_ptr = mlx_xpm_file_to_image(mlx, path, &img->width, &img->height);
-	if (!img->img_ptr)
-		error_exit("Failed to load texture");
-
-	img->img_pixels_ptr = mlx_get_data_addr(img->img_ptr, &img->bits_per_pixel, &img->line_len, &img->endian);
-	if (!img->img_pixels_ptr)
-		error_exit("Failed to get texture data address");
-}
-
-void	load_player_anim(t_anim *anim, void *mlx)
-{
-	load_texture(&anim->frames[0], mlx, "textures/player_idle1.xpm");
-	load_texture(&anim->frames[1], mlx, "textures/player_idle2.xpm");
-	anim->frame_count = 2;
-	anim->frame_delay = 60;
-	anim->current_frame = 0;
-	anim->frame_timer = 0;
-}
-
-void	load_collectible_anim(t_anim *anim, void *mlx)
-{
-	load_texture(&anim->frames[0], mlx, "textures/collectible1.xpm");
-	load_texture(&anim->frames[1], mlx, "textures/collectible2.xpm");
-	anim->frame_count = 2;
-	anim->frame_delay = 60;
-	anim->current_frame = 0;
-	anim->frame_timer = 0;
-}
-
-void	load_enemy_anim(t_anim *anim, void *mlx)
-{
-	load_texture(&anim->frames[0], mlx, "textures/enemy1.xpm");
-	load_texture(&anim->frames[1], mlx, "textures/enemy2.xpm");
-	anim->frame_count = 2;
-	anim->frame_delay = 5;
-	anim->current_frame = 0;
-	anim->frame_timer = 0;
-}
-
-void render_enemies(t_game *game)
-{
-	t_enemy *enemy = game->enemies;
-
-	while (enemy)
-	{
-		t_img *frame = &enemy->anim.frames[enemy->anim.current_frame];
-		draw_sprite(&game->vars.screen, frame, enemy->x * TILE_SIZE, enemy->y * TILE_SIZE);
-		enemy = enemy->next;
-	}
-}
-
-void draw_player(t_game *game)
-{
-	t_img *frame;
-
-	if (game->is_dead)
-	{
-		frame = &game->vars.player_dead;
-	}
-	else
-	{
-		frame = &game->vars.player_anim.frames[game->vars.player_anim.current_frame];
-	}
-
-	int x = game->vars.player_x * TILE_SIZE;
-	int y = game->vars.player_y * TILE_SIZE;
-
-	if (game->vars.facing_right)
-		draw_sprite(&game->vars.screen, frame, x, y);
-	else
-		draw_sprite_flipped(&game->vars.screen, frame, x, y);
-}
-
-void	render_map(t_game *game)
-{
-	int x, y;
-	char tile;
-
-	for (y = 0; y < game->height; y++)
-	{
-		for (x = 0; x < game->width; x++)
-		{
-			tile = game->map[y][x];
-			draw_sprite(&game->vars.screen, &game->vars.floor, x * TILE_SIZE, y * TILE_SIZE);
-
+			char tile = game->grid[y][x];
 			if (tile == '1')
-				draw_sprite(&game->vars.screen, &game->vars.wall, x * TILE_SIZE, y * TILE_SIZE);
+				draw_tile_to_screen(&game->screen, &game->wall, px, py);
 			else if (tile == 'C')
-			{
-				t_img *frame = &game->vars.collectible_anim.frames[game->vars.collectible_anim.current_frame];
-				draw_sprite(&game->vars.screen, frame, x * TILE_SIZE, y * TILE_SIZE);
-			}
+				draw_tile_to_screen(&game->screen, &game->collectible, px, py);
 			else if (tile == 'E')
-				draw_sprite(&game->vars.screen, &game->vars.exit, x * TILE_SIZE, y * TILE_SIZE);
+				draw_tile_to_screen(&game->screen, &game->exit, px, py);
 		}
 	}
-
-	render_enemies(game);
-	draw_player(game);
+	
+	int ppx = game->player.x * TILE_SIZE;
+	int ppy = game->player.y * TILE_SIZE;
+	draw_tile_to_screen(&game->screen, &game->floor, ppx, ppy);
+	draw_tile_to_screen(&game->screen, &game->player.img, ppx, ppy);
+	mlx_put_image_to_window(game->mlx, game->win, game->screen.img_ptr, 0, 0);
 }
-

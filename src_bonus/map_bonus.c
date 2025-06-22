@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   map.c                                              :+:      :+:    :+:   */
+/*   map_bonus.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 16:49:38 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/22 19:19:07 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/22 19:23:17 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "so_long.h"
+#include "so_long_bonus.h"
 
 static int	map_line_length(const char *line)
 {
@@ -27,6 +27,16 @@ void error_exit(const char *msg, t_game *game)
 	ft_putendl_fd("Error", 2);
 	ft_putendl_fd((char *)msg, 2);
 	exit(EXIT_FAILURE);
+}
+
+int count_enemies(t_game *game)
+{
+    int count = 0;
+    for (int y = 0; y < game->map_height; y++)
+        for (int x = 0; x < game->map_width; x++)
+            if (game->grid[y][x] == 'X')
+                count++;
+    return count;
 }
 
 static void validate_chars(t_game *game, int *p_count, int *x_count, int *e_count, int *c_count)
@@ -51,14 +61,20 @@ static void validate_chars(t_game *game, int *p_count, int *x_count, int *e_coun
 			else if (ch == 'C')
 				(*c_count)++;
 			else if (ch == 'X')
+			{
+				game->enemies[*x_count].x = x;
+				game->enemies[*x_count].y = y;
+				game->enemies[*x_count].dir_x = 1;
+				game->enemies[*x_count].dir_y = 0;
 				(*x_count)++;
+			}
 			else if (ch != '1' && ch != '0')
 				error_exit("Invalid character in map", game);
 		}
 	}
 }
 
-static void validate_map(t_game *game)
+static void validate_map(t_game *game, int *num_enemies)
 {
 	int p = 0, x = 0, e = 0, c = 0;
 
@@ -86,6 +102,8 @@ static void validate_map(t_game *game)
 	
 	if (p != 1 || e != 1 || c < 1)
 		error_exit("Map must have 1 'P', 1 'E', and at least 1 'C'", game);
+
+	*num_enemies = x;
 }
 
 int load_map(t_game *game, const char *filename)
@@ -130,8 +148,15 @@ int load_map(t_game *game, const char *filename)
 		game->map_width = map_line_length(game->grid[0]);
 	else
 		error_exit("Empty map file", game);
+	game->num_enemies = count_enemies(game);
+	game->enemies = malloc(sizeof(t_enemy) * game->num_enemies);
+	if (!game->enemies)
+		error_exit("Failed to allocate enemy array", game);
 
-	validate_map(game);
+	int x_count = 0;
+	validate_map(game, &x_count);
+	game->num_enemies = x_count;
+
 	return (1);
 }
 

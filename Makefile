@@ -5,7 +5,7 @@ MAKE	= make -C
 #==============================================================================#
 
 LIBFT_URL 	= git@github.com:xSilverWasHere/Libft.git
-MLX_URL			= https://cdn.intra.42.fr/document/document/32345/minilibx-linux.tgz
+MLX_URL			= https://cdn.intra.42.fr/document/document/36126/minilibx-linux.tgz
 
 #==============================================================================#
 #                                     NAMES                                    #
@@ -35,7 +35,6 @@ BONUS_SRC_PATH		= src_bonus
 BONUS_INC_PATH		= src_bonus
 BONUS_BUILD_PATH		= .build_bonus
 
-
 FILES	= main.c init.c render.c events.c map.c
 
 SRC						= $(addprefix $(SRC_PATH)/, $(FILES))
@@ -61,7 +60,7 @@ MLX_ARC				= $(MLX_PATH)/libmlx_Linux.a
 #                              COMPILER & FLAGS                                #
 #==============================================================================#
 
-CC						= gcc-13
+CC						= cc
 
 CFLAGS				= -Wall -Wextra -Werror -g
 
@@ -92,7 +91,7 @@ deps:		## Download/Update deps
 		else echo "$(YEL)[libft]$(D) folder found 🖔"; fi
 	@if test ! -d "$(MLX_PATH)"; then make get_mlx; \
 		else echo "$(YEL)[mlx]$(D) folder found 🖔"; fi
-	
+
 
 $(BUILD_PATH)/%.o: $(SRC_PATH)/%.c $(HEADERS)
 	@mkdir -p $(dir $@)

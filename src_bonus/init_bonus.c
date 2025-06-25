@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 11:40:32 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 12:46:43 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 09:42:15 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,15 @@ void	init_screen_buffer(t_game *game)
 	game->screen.height = height;
 }
 
+void	init_enemy_at(t_game *game, int x, int y, int *count)
+{
+	game->enemies[*count].x = x;
+	game->enemies[*count].y = y;
+	game->enemies[*count].dir_x = 1;
+	game->enemies[*count].dir_y = 0;
+	(*count)++;
+}
+
 void	init_enemies(t_game *game)
 {
 	int	count;
@@ -71,13 +80,7 @@ void	init_enemies(t_game *game)
 		while (x < game->map_width)
 		{
 			if (game->grid[y][x] == 'X')
-			{
-				game->enemies[count].x = x;
-				game->enemies[count].y = y;
-				game->enemies[count].dir_x = 1;
-				game->enemies[count].dir_y = 0;
-				count++;
-			}
+				init_enemy_at(game, x, y, &count);
 			x++;
 		}
 		y++;

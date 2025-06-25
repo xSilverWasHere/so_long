@@ -35,13 +35,12 @@ BONUS_SRC_PATH		= src_bonus
 BONUS_INC_PATH		= src_bonus
 BONUS_BUILD_PATH		= .build_bonus
 
-FILES	= main.c init.c render.c events.c map.c
-
+FILES	= main.c init.c render.c render_utils.c render_utils2.c events.c map.c move_utils.c map_utils.c map_utils2.c read_utils.c
 SRC						= $(addprefix $(SRC_PATH)/, $(FILES))
 OBJS					= $(SRC:$(SRC_PATH)/%.c=$(BUILD_PATH)/%.o)
 HEADERS				= $(INC_PATH)/so_long.h
 
-BONUS_FILES	= main_bonus.c init_bonus.c render_bonus.c events_bonus.c map_bonus.c
+BONUS_FILES	= main_bonus.c init_bonus.c render_bonus.c render_utils_bonus.c render_utils2_bonus.c events_bonus.c map_bonus.c move_utils_bonus.c map_utils_bonus.c map_utils2_bonus.c read_utils_bonus.c
 
 BONUS_SRC						= $(addprefix $(BONUS_SRC_PATH)/, $(BONUS_FILES))
 BONUS_OBJS					= $(BONUS_SRC:$(BONUS_SRC_PATH)/%.c=$(BONUS_BUILD_PATH)/%.o)

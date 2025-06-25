@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 11:37:23 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 12:51:00 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 09:43:18 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,32 +33,38 @@ int	main(int argc, char **argv)
 	return (0);
 }
 
+void	move_enemy(t_game *game, t_enemy *e)
+{
+	int	next_x;
+	int	next_y;
+
+	next_x = e->x + e->dir_x;
+	next_y = e->y + e->dir_y;
+	if (next_y >= 0 && next_y < game->map_height
+		&& next_x >= 0 && next_x < game->map_width
+		&& game->grid[next_y][next_x] != '1')
+	{
+		e->x = next_x;
+		e->y = next_y;
+		e->anim_index = (e->anim_index + 1) % 2;
+	}
+	else
+	{
+		e->dir_x *= -1;
+		e->dir_y *= -1;
+	}
+}
+
 void	update_enemies(t_game *game)
 {
 	int		i;
-	int		next_x;
-	int		next_y;
 	t_enemy	*e;
 
 	i = 0;
 	while (i < game->num_enemies)
 	{
 		e = &game->enemies[i];
-		next_x = e->x + e->dir_x;
-		next_y = e->y + e->dir_y;
-		if (next_y >= 0 && next_y < game->map_height
-			&& next_x >= 0 && next_x < game->map_width
-			&& game->grid[next_y][next_x] != '1')
-		{
-			e->x = next_x;
-			e->y = next_y;
-			e->anim_index = (e->anim_index + 1) % 2;
-		}
-		else
-		{
-			e->dir_x *= -1;
-			e->dir_y *= -1;
-		}
+		move_enemy(game, e);
 		if (e->x == game->player.x && e->y == game->player.y)
 			error_exit("You were caught by an enemy!", game);
 		i++;

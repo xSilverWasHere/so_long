@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:17:57 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 14:07:49 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 11:21:36 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,32 +63,34 @@ typedef struct s_input_state
 	int		cooldown;
 }	t_input_state;
 
-typedef struct s_counter
-{
-	int	*p;
-	int	*e;
-	int	*c;
-}	t_counter;
-
-typedef struct s_tileinfo
-{
-	char	ch;
-	int		x;
-	int		y;
-}	t_tileinfo;
-
 typedef struct s_player
 {
-	int				anim_index;
-	int				idle_anim_timer;
-	int				anim_counter;
-	int				idle_index;
-	int				is_moving;
-	int				facing;
 	int				x;
 	int				y;
 	t_img			img;
 }	t_player;
+
+typedef struct s_counts
+{
+	int	p;
+	int	e;
+	int	c;
+}	t_counts;
+
+typedef struct s_charinfo
+{
+	char	ch;
+	int		x;
+	int		y;
+}	t_charinfo;
+
+typedef struct s_drawpos
+{
+	int	x;
+	int	y;
+	int	x_offset;
+	int	y_offset;
+}	t_drawpos;
 
 typedef struct s_game
 {
@@ -101,34 +103,64 @@ typedef struct s_game
 	t_img			exit;
 	t_player		player;
 	t_input_state	input;
-	int				num_enemies;
 	int				map_width;
 	int				map_height;
 	char			**grid;
 	int				moves;
 	int				total_collectibles;
 	int				collected;
-	int				frame_count;
 }	t_game;
 
 // Functions
-int		close_game(t_game *game);
+
+// events
+void	move_player(t_game *game, int dx, int dy);
 int		key_press(int keycode, void *param);
 int		key_release(int keycode, void *param);
 int		handle_continuous_input(void *param);
+int		close_game(t_game *game);
+
+//init
+void	load_texture(void *mlx, t_img *img, char *path);
 void	init_screen_buffer(t_game *game);
 void	init_game(t_game *game);
+
+//main
+int		game_loop(void *param);
+
+//map
+int		map_line_length(char *line);
+void	validate_chars(t_game *game, t_counts *counts);
+void	validate_map(t_game *game);
+void	handle_char(t_game *game, t_counts *counts, t_charinfo info);
+char	**copy_map_grid(char **grid, int height);
+void	free_map(t_game *game);
+int		load_map(t_game *game, const char *filename);
+void	error_exit(const char *msg, t_game *game);
+char	*trim_newline(char *line);
+char	**realloc_grid(char **old, size_t old_cap, size_t new_cap,
+			t_game *game);
+int		all_targets_reached(char **grid, int height);
+
+//move_utils
+void	process_input(t_game *game, int x, int y);
+int		check_collision(t_game *game, int x, int y);
+void	handle_collectible(t_game *game, int x, int y);
+int		handle_exit(t_game *game, int x, int y);
+
+//read_utils
+void	check_pathfinding(t_game *game);
+char	**read_map_lines(int fd, t_game *game, size_t *line_count);
+void	check_rectangular_and_walls(t_game *game);
+
+//render
 void	draw(t_game *game);
 void	draw_tile_to_screen(t_img *screen, t_img *tile,
 			int x_offset, int y_offset);
-void	draw_hud(t_game *game);
-int		game_loop(void *param);
-void	load_texture(void *mlx, t_img *img, char *path);
-void	error_exit(const char *msg, t_game *game);
-int		load_map(t_game *game, const char *filename);
-void	free_map(t_game *game);
-char	**copy_map_grid(char **grid, int height);
 void	flood_fill(char **grid, int y, int x);
-int		all_targets_reached(char **grid, int height);
+void	copy_pixel_if_visible(t_img *screen, t_img *tile, t_drawpos pos);
+void	render_map_tiles(t_game *game);
+void	render_player(t_game *game);
+void	draw_tile_at(t_game *game, int x, int y);
 
 #endif

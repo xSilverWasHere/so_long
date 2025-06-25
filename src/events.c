@@ -6,51 +6,29 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 11:40:30 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 14:03:04 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 11:13:19 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-static int	handle_exit(t_game *game)
-{
-	if (game->collected == game->total_collectibles)
-	{
-		printf("You win! Total moves: %d\n", game->moves + 1);
-		close_game(game);
-		return (1);
-	}
-	printf("You must collect all items before exiting!\n");
-	return (1);
-}
-
-static void	handle_collectible(t_game *game, int x, int y)
-{
-	game->grid[y][x] = '0';
-	game->collected++;
-	printf("Collected: %d/%d\n", game->collected, game->total_collectibles);
-}
-
 void	move_player(t_game *game, int dx, int dy)
 {
-	int		new_x;
-	int		new_y;
+	int		x;
+	int		y;
 	char	tile;
 
-	new_x = game->player.x + dx;
-	new_y = game->player.y + dy;
-	if (new_x < 0 || new_x >= game->map_width || new_y < 0
-		|| new_y >= game->map_height)
+	x = game->player.x + dx;
+	y = game->player.y + dy;
+	if (check_collision(game, x, y))
 		return ;
-	tile = game->grid[new_y][new_x];
-	if (tile == '1')
-		return ;
+	tile = game->grid[y][x];
 	if (tile == 'C')
-		handle_collectible(game, new_x, new_y);
-	if (tile == 'E' && handle_exit(game))
+		handle_collectible(game, x, y);
+	if (tile == 'E' && handle_exit(game, x, y))
 		return ;
-	game->player.x = new_x;
-	game->player.y = new_y;
+	game->player.x = x;
+	game->player.y = y;
 	game->moves++;
 	printf("Moves: %d\n", game->moves);
 	draw(game);
@@ -90,30 +68,24 @@ int	key_release(int keycode, void *param)
 	return (0);
 }
 
-static void	handle_direction(t_game *g, int dx, int dy)
-{
-	move_player(g, dx, dy);
-	g->input.cooldown = 10;
-}
-
 int	handle_continuous_input(void *param)
 {
-	t_game	*g;
+	t_game	*game;
 
-	g = (t_game *)param;
-	if (g->input.cooldown > 0)
+	game = (t_game *)param;
+	if (game->input.cooldown > 0)
 	{
-		g->input.cooldown--;
+		game->input.cooldown--;
 		return (0);
 	}
-	if (g->input.key_up)
-		handle_direction(g, 0, -1);
-	else if (g->input.key_down)
-		handle_direction(g, 0, 1);
-	else if (g->input.key_left)
-		handle_direction(g, -1, 0);
-	else if (g->input.key_right)
-		handle_direction(g, 1, 0);
+	if (game->input.key_up)
+		process_input(game, 0, -1);
+	else if (game->input.key_down)
+		process_input(game, 0, 1);
+	else if (game->input.key_left)
+		process_input(game, -1, 0);
+	else if (game->input.key_right)
+		process_input(game, 1, 0);
 	return (0);
 }
 

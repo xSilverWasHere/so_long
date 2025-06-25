@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 11:40:30 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 12:44:09 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 09:41:15 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,41 +14,21 @@
 
 void	move_player(t_game *game, int dx, int dy)
 {
-	int		new_x;
-	int		new_y;
-	int		i;
+	int		x;
+	int		y;
 	char	tile;
 
-	new_x = game->player.x + dx;
-	new_y = game->player.y + dy;
-	if (new_x < 0 || new_x >= game->map_width || new_y < 0
-		|| new_y >= game->map_height)
+	x = game->player.x + dx;
+	y = game->player.y + dy;
+	if (check_collision(game, x, y))
 		return ;
-	tile = game->grid[new_y][new_x];
-	if (tile == '1')
-		return ;
+	tile = game->grid[y][x];
 	if (tile == 'C')
-	{
-		game->grid[new_y][new_x] = '0';
-		game->collected++;
-		printf("Collected: %d/%d\n", game->collected, game->total_collectibles);
-	}
-	if (tile == 'E')
-	{
-		if (game->collected == game->total_collectibles)
-		{
-			printf("You win! Total moves: %d\n", game->moves + 1);
-			close_game(game);
-			return ;
-		}
-		else
-		{
-			printf("You must collect all items before exiting!\n");
-			return ;
-		}
-	}
-	game->player.x = new_x;
-	game->player.y = new_y;
+		handle_collectible(game, x, y);
+	if (tile == 'E' && handle_exit(game, x, y))
+		return ;
+	game->player.x = x;
+	game->player.y = y;
 	if (dx < 0)
 		game->player.facing = -1;
 	else if (dx > 0)
@@ -56,16 +36,7 @@ void	move_player(t_game *game, int dx, int dy)
 	game->player.is_moving = 1;
 	game->moves++;
 	printf("Moves: %d\n", game->moves);
-	i = 0;
-	while (i < game->num_enemies)
-	{
-		if (game->player.x == game->enemies[i].x
-			&& game->player.y == game->enemies[i].y)
-		{
-			error_exit("You ran into an enemy!", game);
-		}
-		i++;
-	}
+	check_enemy_collision(game);
 	game->player.anim_index ^= 1;
 	draw(game);
 }
@@ -115,25 +86,13 @@ int	handle_continuous_input(void *param)
 		return (0);
 	}
 	if (game->input.key_up)
-	{
-		move_player(game, 0, -1);
-		game->input.cooldown = 10;
-	}
+		process_input(game, 0, -1);
 	else if (game->input.key_down)
-	{
-		move_player(game, 0, 1);
-		game->input.cooldown = 10;
-	}
+		process_input(game, 0, 1);
 	else if (game->input.key_left)
-	{
-		move_player(game, -1, 0);
-		game->input.cooldown = 10;
-	}
+		process_input(game, -1, 0);
 	else if (game->input.key_right)
-	{
-		move_player(game, 1, 0);
-		game->input.cooldown = 10;
-	}
+		process_input(game, 1, 0);
 	return (0);
 }
 

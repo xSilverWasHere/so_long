@@ -6,7 +6,7 @@
 /*   By: jpedro-g <jpedro-g@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/22 11:40:32 by jpedro-g          #+#    #+#             */
-/*   Updated: 2025/06/23 13:33:05 by jpedro-g         ###   ########.fr       */
+/*   Updated: 2025/06/25 11:09:53 by jpedro-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ void	init_screen_buffer(t_game *game)
 
 void	init_game(t_game *game)
 {
-	game->frame_count = 0;
 	game->mlx = mlx_init();
 	if (!game->mlx)
 		exit(EXIT_FAILURE);
